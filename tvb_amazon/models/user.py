@@ -65,3 +65,11 @@ class UserModel:
         cursor = self.db.users.find(query)
         user = cursor[0] if cursor.count() > 0 else None
         return user
+
+    def get_cart(self, _id):
+        query = {
+            '_id': ObjectId(_id)
+        }
+        cursor = self.db.users.find(query)
+        cart = cursor[0]['cart'] if cursor.count() > 0 else None
+        return cart

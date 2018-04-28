@@ -1,4 +1,4 @@
-from flask import request, Response, render_template
+from flask import request, Response, render_template, jsonify
 from tvb_amazon.models.product import ProductModel
 from tvb_amazon import app
 from tvb_amazon.models.user import UserModel
@@ -98,13 +98,39 @@ def user():
 
 @app.route('/api/cart', methods=['POST'])
 def cart():
-    user_id = request.form.get('user_id', None)
-    product_id = request.form.get('product_id', None)
+    op_type = request.form.get('op_type', None)
 
-    success = user_model.add_product_to_cart(user_id, product_id)
+    if op_type == 'get':
+        user_id = request.form.get('user_id', None)
+        user_data = user_model.get_by_id(user_id)
 
-    # irrespective of success
-    user_data = user_model.get_by_id(user_id)
-    return render_template('profile.html',
-                           name=user_data['name'],
-                           user_id=user_data['_id'])
+        product_ids = user_model.get_cart(user_id)
+        products = [product_model.get_product(product_id) for product_id in product_ids]
+
+        output_type = request.form.get('output_type', None)
+        if output_type == 'html':
+            return render_template('cart.html',
+                                   name=user_data['name'],
+                                   products=products,
+                                   user_id=user_id)
+        else:
+            json_products = {
+                'products': products
+            }
+            return jsonify(json_products)
+    elif op_type == 'add':
+        user_id = request.form.get('user_id', None)
+        product_id = request.form.get('product_id', None)
+
+        success = user_model.add_product_to_cart(user_id, product_id)
+
+        # irrespective of success
+        user_data = user_model.get_by_id(user_id)
+        return render_template('profile.html',
+                               name=user_data['name'],
+                               user_id=user_data['_id'])
+    else:
+        status = {
+            'status': 'Invalid op_type'
+        }
+        return Response(str(status), status=400, mimetype='application/json')
