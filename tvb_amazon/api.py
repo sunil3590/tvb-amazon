@@ -1,4 +1,4 @@
-from flask import request, Response, render_template, jsonify
+from flask import request, Response, render_template
 from tvb_amazon.models.product import ProductModel
 from tvb_amazon import app
 from tvb_amazon.models.user import UserModel
@@ -117,7 +117,7 @@ def cart():
             json_products = {
                 'products': products
             }
-            return jsonify(json_products)
+            return Response(str(json_products), mimetype='application/json', status=200)
     elif op_type == 'add':
         user_id = request.form.get('user_id', None)
         product_id = request.form.get('product_id', None)
@@ -129,6 +129,28 @@ def cart():
         return render_template('profile.html',
                                name=user_data['name'],
                                user_id=user_data['_id'])
+    elif op_type == 'remove':
+        user_id = request.form.get('user_id', None)
+        user_data = user_model.get_by_id(user_id)
+
+        product_id = request.form.get('product_id', None)
+        user_model.remove_product_from_cart(user_id, product_id)
+
+        product_ids = user_model.get_cart(user_id)
+        products = [product_model.get_product(product_id) for product_id in product_ids]
+
+        output_type = request.form.get('output_type', None)
+        if output_type == 'html':
+            return render_template('cart.html',
+                                   name=user_data['name'],
+                                   products=products,
+                                   user_id=user_id)
+        else:
+            json_products = {
+                'products': products
+            }
+            return Response(str(json_products), mimetype='application/json', status=200)
+
     else:
         status = {
             'status': 'Invalid op_type'
