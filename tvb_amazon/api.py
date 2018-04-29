@@ -34,7 +34,7 @@ def product():
             p = dict()
             p['name'] = request.form['name']
             p['description'] = request.form['description']
-            p['price'] = request.form['price']
+            p['price'] = int(request.form['price'])
 
             product_model.save(p)
 
@@ -53,7 +53,7 @@ def product():
             if request.form['description'] != '':
                 updated_product['description'] = request.form['description']
             if request.form['price'] != '':
-                updated_product['price'] = request.form['price']
+                updated_product['price'] = int(request.form['price'])
 
             product_model.update_by_id(_id, updated_product)
 
@@ -109,12 +109,17 @@ def cart():
         product_ids = user_model.get_cart(user_id)
         products = [product_model.get_product(product_id) for product_id in product_ids]
 
+        total = 0
+        for p in products:
+            total += p['price']
+
         output_type = request.form.get('output_type', None)
         if output_type == 'html':
             return render_template('cart.html',
                                    name=user_data['name'],
                                    products=products,
-                                   user_id=user_id)
+                                   user_id=user_id,
+                                   total=total)
         else:
             for p in products:
                 p['_id'] = str(p['_id'])
