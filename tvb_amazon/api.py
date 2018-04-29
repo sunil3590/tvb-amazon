@@ -1,4 +1,4 @@
-from flask import request, Response, render_template
+from flask import request, Response, render_template, jsonify
 from tvb_amazon.models.product import ProductModel
 from tvb_amazon import app
 from tvb_amazon.models.user import UserModel
@@ -26,7 +26,9 @@ def product():
                                    results=matches,
                                    user_id=user_id)
         else:
-            return Response(str(matches), mimetype='application/json', status=200)
+            for m in matches:
+                m['_id'] = str(m['_id'])
+            return jsonify(matches)
     elif request.method == 'POST':
         if request.form['op_type'] == 'insert':
             p = dict()
@@ -36,12 +38,12 @@ def product():
 
             product_model.save(p)
 
-            return Response(str({'status': 'success'}), mimetype='application/json', status=200)
+            return jsonify({'status': 'success'})
         elif request.form['op_type'] == 'delete':
             _id = request.form['_id']
             product_model.delete_by_id(_id)
 
-            return Response(str({'status': 'success'}), mimetype='application/json', status=200)
+            return jsonify({'status': 'success'})
         elif request.form['op_type'] == 'update':
             _id = request.form['_id']
 
@@ -55,7 +57,7 @@ def product():
 
             product_model.update_by_id(_id, updated_product)
 
-            return Response(str({'status': 'success'}), mimetype='application/json', status=200)
+            return jsonify({'status': 'success'})
 
 
 @app.route('/api/user', methods=['POST'])
@@ -93,7 +95,7 @@ def user():
         status = {
             'status': 'Invalid op_type'
         }
-        return Response(str(status), status=400, mimetype='application/json')
+        return jsonify(status)
 
 
 @app.route('/api/cart', methods=['POST'])
@@ -114,10 +116,9 @@ def cart():
                                    products=products,
                                    user_id=user_id)
         else:
-            json_products = {
-                'products': products
-            }
-            return Response(str(json_products), mimetype='application/json', status=200)
+            for p in products:
+                p['_id'] = str(p['_id'])
+            return jsonify({'products': products})
     elif op_type == 'add':
         user_id = request.form.get('user_id', None)
         product_id = request.form.get('product_id', None)
@@ -146,13 +147,12 @@ def cart():
                                    products=products,
                                    user_id=user_id)
         else:
-            json_products = {
-                'products': products
-            }
-            return Response(str(json_products), mimetype='application/json', status=200)
+            for p in products:
+                p['_id'] = str(p['_id'])
+            return jsonify({'products': products})
 
     else:
         status = {
             'status': 'Invalid op_type'
         }
-        return Response(str(status), status=400, mimetype='application/json')
+        return jsonify(status)
