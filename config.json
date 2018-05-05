@@ -3,5 +3,5 @@
   "port": 5000,
   "mongo_host": "localhost",
   "mongo_port": 27017,
-  "mongo_db_name": "tvb_amazon"
+  "mongo_db_name": "sunil_amazon"
 }
