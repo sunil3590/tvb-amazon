@@ -1,5 +1,6 @@
 from tvb_amazon import app
-
+import json
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
+    config = json.load(open('./config.json', 'r'))
+    app.run(host=config['host'], port=config['port'], debug=True, threaded=True)
