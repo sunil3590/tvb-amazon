@@ -5,4 +5,6 @@ app = Flask('tvb-amazon',
             static_url_path='',
             template_folder='./tvb_amazon/templates')
 
+app.secret_key = 'mysecret'
+
 from tvb_amazon import views, api
